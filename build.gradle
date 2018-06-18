@@ -22,10 +22,16 @@ apply plugin: 'kotlin'
 apply plugin: "kotlin-spring"
 apply plugin: 'org.springframework.boot'
 
-jar {
-    baseName = 'hello'
-    version = '0.1.0'
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes "Main-Class": "com.sample.hello.Application"
+    }
+    baseName = 'all-in-one-jar'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
 }
+
+
 
 if (file('jfrogcredentials.gradle').exists()) {
     apply from: 'jfrogcredentials.gradle'
@@ -38,12 +44,6 @@ allprojects {
     apply plugin: 'java'
     apply plugin: "com.jfrog.artifactory"
 
-    task thinJar(type: Jar) {
-        from("${buildDir}") {
-            exclude "**/*.jar"
-        }
-    }
-
     repositories {
         mavenLocal()
         jcenter()
@@ -51,8 +51,10 @@ allprojects {
         maven { url 'https://jitpack.io' }
     }
 
+
     artifactory {
         contextUrl = System.getenv("ARTIFACTORY_CONTEXT") ?: "${artifactory_contextUrl}"   //The base Artifactory URL if not overridden by the publisher/resolver
+
         publish {
             repository {
                 repoKey = System.getenv('ARTIFACTORY_REPOKEY') ?: "${artifactory_repoKey}"
@@ -63,11 +65,11 @@ allprojects {
             defaults {
                 // publications ('ivyJava','mavenJava','foo')
                 publishConfigs('archives', 'published')
-
                 publishArtifacts = true
                 publishBuildInfo = true
                 publishPom = true
                 publishIvy = false
+
             }
 
         }
