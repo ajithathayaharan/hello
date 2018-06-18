@@ -17,19 +17,23 @@ buildscript {
         classpath(group: 'org.jfrog.buildinfo', name: 'build-info-extractor-gradle', version: '4.7.2')
     }
 }
-
+apply plugin: 'war'
 apply plugin: 'kotlin'
 apply plugin: "kotlin-spring"
 apply plugin: 'org.springframework.boot'
 
+war {
+    rootSpec.exclude("**/*.jar")
+}
 
-task fatJar(type: Jar) {
+task fatWar(type: War) {
     manifest {
         attributes "Main-Class": "com.sample.hello.Application"
     }
     baseName = 'all-in-one-jar'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
 }
+
 
 
 
